@@ -1,10 +1,12 @@
 <!doctype html>
 <html lang="en">
+  <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Demo - The Web's Sixth Sense: A Study of Scripts Accessing Smartphone Sensors</title>
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" rel="stylesheet">
+    
     <title>JavaScript Sensor Access Demo</title>
     <style>
       #demo-div {color: lightgrey; border-radius: 0.3rem;}
@@ -13,6 +15,17 @@
       h4 {margin-top: 0.66rem; font-size:1.33rem;}
       #demo-div li {line-height: 21px;}
       #demo-div ul {margin-bottom: 0.66rem;}
+      body,html {
+        position: fixed;
+      }
+      .vranger {
+        position: fixed;
+        right: 0%;
+        width:400px;
+        margin-top: 50px;
+        transform: rotate(270deg);
+        -moz-transform: rotate(270deg); /*do same for other browsers if required*/
+      }
     </style>
 </head>
 <body>
@@ -54,7 +67,11 @@
 </ul>
 
 </div>
+
 </main>
+<input type="range" class="form-range vranger"/>
+<label for="customRange1" class="form-label">Example range</label>
+<input type="range" class="form-range" id="customRange1">
 
 <script src="https://cdn.bootcdn.net/ajax/libs/socket.io/3.0.0-rc4/socket.io.min.js"></script>
 
@@ -62,6 +79,15 @@
 
 var socket = new io();
 socket.connect();
+
+var range = $('.input-range'),
+    value = $('.range-value');
+    
+value.html(range.attr('value'));
+
+range.on('input', function(){
+    value.html(this.value);
+}); 
 
 function handleOrientation(event) {
   updateFieldIfNotNull('Orientation_a', event.alpha);
