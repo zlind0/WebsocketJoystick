@@ -26,6 +26,43 @@
         transform: rotate(270deg);
         -moz-transform: rotate(270deg); /*do same for other browsers if required*/
       }
+      #throttle{
+        height: 60%;
+        width: 100px;
+        position: fixed;
+        right:0px;
+        top:0px;
+        color: white;
+        background-color:#65df7a;
+        text-align: center;
+      }
+      #brake{
+        height: 40%;
+        width: 100px;
+        position: fixed;
+        right:0px;
+        bottom:0px;
+        color: white;
+        background-color:rgb(134, 177, 255);
+        text-align: center;
+        /* padding:20%; */
+      }
+      #throttle_brake{
+        height:100%;
+      }
+      #buttons{
+        position: fixed;
+        top:30px;
+        right:150px;
+      }
+      #buttons2{
+        position: fixed;
+        top:30px;
+        right:250px;
+      }
+      button{
+        margin:10px;
+      }
     </style>
 </head>
 <body>
@@ -43,6 +80,12 @@
   <li>Z-axis (&alpha;): <span id="Orientation_a">0</span><span>&deg;</span></li>
 </ul>
 
+<h4 style="margin-top:0.75rem;">Pedals</h4>
+<ul>
+  <li>Throttle (&beta;): <span id="pedal_throttle">?</span><span>&deg;</span></li>
+  <li>Brake (&gamma;): <span id="pedal_brake">?</span><span>&deg;</span></li>
+</ul>
+<!-- 
 <h4>Accelerometer</h4>
 <ul>
   <li>X-axis: <span id="Accelerometer_x">0</span><span> m/s<sup>2</sup></span></li>
@@ -64,14 +107,34 @@
   <li>X-axis: <span id="Gyroscope_x">0</span><span>&deg;/s</span></li>
   <li>Y-axis: <span id="Gyroscope_y">0</span><span>&deg;/s</span></li>
   <li>Z-axis: <span id="Gyroscope_z">0</span><span>&deg;/s</span></li>
-</ul>
+</ul> -->
 
 </div>
 
 </main>
-<input type="range" class="form-range vranger"/>
+<!-- <input type="range" class="form-range vranger"/>
 <label for="customRange1" class="form-label">Example range</label>
-<input type="range" class="form-range" id="customRange1">
+<input type="range" class="form-range" id="customRange1"> -->
+
+<div id='throttle_brake'>
+<div id="throttle">油<br>门</div>
+<div id="brake">刹<br>车</div>
+</div>
+
+
+<div id='buttons'>
+<button id="b1" class="btn btn-primary">FLAPS+</button><br>
+<button id="b2" class="btn btn-primary">FLAPS-</button><br>
+<button id="b3" class="btn btn-primary">GEAR</button><br>
+<button id="b4" class="btn btn-primary">SPOILER</button><br>
+</div>
+
+<div id='buttons2'>
+  <button id="b5" class="btn btn-primary">BRAKE</button><br>
+  <button id="b6" class="btn btn-primary">B6</button><br>
+  <button id="b7" class="btn btn-primary">B7</button><br>
+  <button id="b8" class="btn btn-primary">B8</button><br>
+  </div>
 
 <script src="https://cdn.bootcdn.net/ajax/libs/socket.io/3.0.0-rc4/socket.io.min.js"></script>
 
@@ -90,12 +153,21 @@ range.on('input', function(){
 }); 
 
 function handleOrientation(event) {
+
+
+  var y=event.beta;
+  if (y>90){y=180-y;}
+  if (y<-90){y=-180-y;}
+
+  var z=event.gamma;
+  if (z<0){z+=180;}
+
   updateFieldIfNotNull('Orientation_a', event.alpha);
-  updateFieldIfNotNull('Orientation_b', event.beta );
-  updateFieldIfNotNull('Orientation_g', event.gamma);
+  updateFieldIfNotNull('Orientation_b', y );
+  updateFieldIfNotNull('Orientation_g', z );
   incrementEventCount();
 
-  socket.emit("rotation", {"x":event.alpha,"y":event.beta ,"z":event.gamma});
+  socket.emit("rotation", {"x":event.alpha,"y":y ,"z":z});
 }
 
 function incrementEventCount(){
@@ -110,20 +182,20 @@ function updateFieldIfNotNull(fieldName, value, precision=10){
 }
 
 function handleMotion(event) {
-  updateFieldIfNotNull('Accelerometer_gx', event.accelerationIncludingGravity.x);
-  updateFieldIfNotNull('Accelerometer_gy', event.accelerationIncludingGravity.y);
-  updateFieldIfNotNull('Accelerometer_gz', event.accelerationIncludingGravity.z);
+  // updateFieldIfNotNull('Accelerometer_gx', event.accelerationIncludingGravity.x);
+  // updateFieldIfNotNull('Accelerometer_gy', event.accelerationIncludingGravity.y);
+  // updateFieldIfNotNull('Accelerometer_gz', event.accelerationIncludingGravity.z);
 
-  updateFieldIfNotNull('Accelerometer_x', event.acceleration.x);
-  updateFieldIfNotNull('Accelerometer_y', event.acceleration.y);
-  updateFieldIfNotNull('Accelerometer_z', event.acceleration.z);
+  // updateFieldIfNotNull('Accelerometer_x', event.acceleration.x);
+  // updateFieldIfNotNull('Accelerometer_y', event.acceleration.y);
+  // updateFieldIfNotNull('Accelerometer_z', event.acceleration.z);
 
-  updateFieldIfNotNull('Accelerometer_i', event.interval, 2);
+  // updateFieldIfNotNull('Accelerometer_i', event.interval, 2);
 
-  updateFieldIfNotNull('Gyroscope_z', event.rotationRate.alpha);
-  updateFieldIfNotNull('Gyroscope_x', event.rotationRate.beta);
-  updateFieldIfNotNull('Gyroscope_y', event.rotationRate.gamma);
-  incrementEventCount();
+  // updateFieldIfNotNull('Gyroscope_z', event.rotationRate.alpha);
+  // updateFieldIfNotNull('Gyroscope_x', event.rotationRate.beta);
+  // updateFieldIfNotNull('Gyroscope_y', event.rotationRate.gamma);
+  // incrementEventCount();
 
 }
 
@@ -156,6 +228,35 @@ demo_button.onclick = function(e) {
     is_running = true;
   }
 };
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // get the mouse cursor position at startup:
+    var y = e.originalEvent.touches[0].pageY;
+    var pos=y/($("#throttle").height()+$("#brake").height());
+    $('#pedal_throttle').text(pos);
+    // if (pos<0.6){
+    //   socket.emit("rotation", {"rt":pos*1.6,"lt":0});
+    // }else{
+    //   socket.emit("rotation", {"lt":0,"lt":pos*2.5});
+    // }
+    socket.emit("rotation",{"t":pos});
+  }
+  $('#throttle_brake').on('touchmove', dragMouseDown);
+
+  function btndown(e){
+    var btn=$(this).attr('id');
+    socket.emit("rotation",{  "val":1, "btn":btn});
+    console.log(btn);
+  }
+  function btnup(e){
+    var btn=$(this).attr('id');
+    socket.emit("rotation",{ "val":0, "btn":btn});
+  }
+
+  $('button').on('touchstart', btndown);
+  $('button').on('touchend', btnup);
 
 </script>
 </body>
